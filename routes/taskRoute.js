@@ -4,7 +4,7 @@ const router = require('express').Router()
 
 router.use(authenticateUser)
 
-router.post('/addtask', async (req, res) => {
+router.post('/add-task', async (req, res) => {
 	try {
 		const { taskDescription, assignedTo } = req.body
 		const task = new Task({
@@ -69,7 +69,8 @@ router.put('/update/:id', async (req, res) => {
 			status !== 'completed'
 		)
 			return res.status(403).json({ err: 'Not authorized' })
-
+		if (task.currentStatus === 'closed') task.isActive = true
+		task.currentStatus = status
 		task.statusLogs.push({
 			status,
 			updatedBy: user.id,

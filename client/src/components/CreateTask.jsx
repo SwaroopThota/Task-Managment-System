@@ -1,29 +1,29 @@
 import React, { useState } from 'react'
-import {
-	FormControl,
-	InputLabel,
-	MenuItem,
-	Select,
-	TextField,
-	Typography,
-	Button,
-	Stack,
-} from '@mui/material'
+import { MenuItem, TextField, Typography, Button, Stack } from '@mui/material'
 import { useContext } from 'react'
 import { userContext } from './context/UserProvider'
+import { Link } from 'react-router-dom'
 
 const CreateTask = () => {
-	const { users } = useContext(userContext)
+	const { users, addTask } = useContext(userContext)
 	const [task, setTask] = useState({
 		taskDescription: '',
 		assignedTo: '',
 	})
 	const handleChange = (e) => {
 		setTask({ ...task, [e.target.name]: e.target.value })
-		console.log(task);
 	}
-	const handleClick = () => {
-		console.log(task)
+	const handleClick = async () => {
+		try {
+			addTask(task)
+			setTask({
+				taskDescription: '',
+				assignedTo: '',
+			})
+			alert('Task assigned successfull...')
+		} catch (err) {
+			alert(err)
+		}
 	}
 	return (
 		<>
@@ -38,6 +38,7 @@ const CreateTask = () => {
 			>
 				<Typography variant='h3'>Create New Task</Typography>
 				<TextField
+					required
 					label='Task Description'
 					multiline
 					maxRows={10}
@@ -46,25 +47,27 @@ const CreateTask = () => {
 					onChange={handleChange}
 					name='taskDescription'
 				/>
-				<FormControl fullWidth>
-					<InputLabel>Assign to</InputLabel>
-					<Select
-						value={task.assignedTo}
-						label='Age'
-						onChange={handleChange}
-						name='assignedTo'
-						variant='standard'
-					>
-					<MenuItem value='' key={''} selected>None</MenuItem>
-						{users.map((user) => (
-							<MenuItem value={user.id} key={user.name} selected>
-								{user.name}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
+				<TextField
+					select
+					variant='standard'
+					name='assignedTo'
+					label='Assign to'
+					value={task.assignedTo}
+					onChange={handleChange}
+					fullWidth
+					required
+				>
+					{users.map(({ _id, name }, index) => (
+						<MenuItem value={_id} key={index}>
+							{name}
+						</MenuItem>
+					))}
+				</TextField>
 				<Button variant='outlined' onClick={handleClick}>
 					Create
+				</Button>
+				<Button variant='outlined'>
+					<Link to='/' variant='outlined'>Go Back</Link>
 				</Button>
 			</Stack>
 		</>

@@ -36,6 +36,10 @@ const taskSchema = new mongoose.Schema({
 		type: Date,
 		default: Date.now,
 	},
+	currentStatus: {
+		type: String,
+		default: 'created'
+	},
 	statusLogs: {
 		type: [statusSchema],
 	},

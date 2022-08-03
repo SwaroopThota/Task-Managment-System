@@ -4,23 +4,21 @@ const jwt = require('jsonwebtoken')
 const authenticateUser = require('../middleware/authenticateUser')
 require('dotenv').config()
 
-
 // GET: current user details
 router.get('/', authenticateUser, (req, res) => {
 	try {
-		res.json({user: req.user})
+		res.json({ user: req.user })
 	} catch (err) {
 		console.log(err.message)
 		res.status(500).json({ err: 'Internal Server Error' })
 	}
 })
 
-
 // GET: all user details
 router.get('/all', authenticateUser, async (req, res) => {
 	try {
-		const users = await User.find({
-			$and: [{ id: { $not: req.user.id } }, { role: 'user' }],
+		let users = await User.find({
+			$and: [{ role: 'user' }, { email: { $ne: req.user.email } }],
 		}).select(['id', 'name'])
 		res.json({ users })
 	} catch (err) {

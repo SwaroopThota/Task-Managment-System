@@ -1,10 +1,13 @@
 import React, { createContext, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 
 const userContext = createContext()
 const UserProvider = ({ children }) => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false)
 	const [isAdmin, setIsAdmin] = useState(false)
 	const [isLoading, setIsLoading] = useState(true)
+	const [myTasks, setMyTasks] = useState([])
+	const [assignedTasks, setAssignedTasks] = useState([])
 	let [user, setUser] = useState({
 		_id: '',
 		name: '',
@@ -58,7 +61,9 @@ const UserProvider = ({ children }) => {
 		try {
 			let res = await fetch('http://localhost:5000/api/user/all', {
 				headers: {
-					authorization: `Bearer ${localStorage.getItem('authToken')}`,
+					authorization: `Bearer ${localStorage.getItem(
+						'authToken'
+					)}`,
 				},
 			})
 			res = await res.json()
@@ -67,6 +72,93 @@ const UserProvider = ({ children }) => {
 		} catch (err) {
 			alert(err)
 		}
+	}
+
+	const addTask = async (task) => {
+		await fetch('http://localhost:5000/api/task/add-task', {
+			method: 'POST',
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				authorization: `Bearer ${localStorage.getItem('authToken')}`,
+			},
+			body: JSON.stringify(task),
+		})
+	}
+
+	const getMyTasks = async () => {
+		try {
+			let res = await fetch('http://localhost:5000/api/task/my-tasks', {
+				method: 'GET',
+				mode: 'cors',
+				headers: {
+					authorization: `Bearer ${localStorage.getItem(
+						'authToken'
+					)}`,
+				},
+			})
+			res = await res.json()
+			setMyTasks(res)
+		} catch (err) {
+			console.log(err)
+			// alert(err)
+		}
+	}
+	const getAssignedTasks = async () => {
+		try {
+			let res = await fetch(
+				'http://localhost:5000/api/task/assigned-tasks',
+				{
+					method: 'GET',
+					mode: 'cors',
+					headers: {
+						authorization: `Bearer ${localStorage.getItem(
+							'authToken'
+						)}`,
+					},
+				}
+			)
+			res = await res.json()
+			setAssignedTasks(res)
+		} catch (err) {
+			alert(err)
+		}
+	}
+
+	const updateTaskStaus = async (id, status, isAssignedTask) => {
+		try {
+			await fetch(`http://localhost:5000/api/task/update/${id}`, {
+				method: 'PUT',
+				mode: 'cors',
+				headers: {
+					'Content-Type': 'application/json',
+					authorization: `Bearer ${localStorage.getItem(
+						'authToken'
+					)}`,
+				},
+				body: JSON.stringify({ status }),
+			})
+			if (isAssignedTask) await getAssignedTasks()
+			else await getMyTasks()
+		} catch (err) {
+			alert(err)
+		}
+	}
+
+	const logout = () => {
+		localStorage.removeItem('authToken')
+		setUser({
+			_id: '',
+			name: '',
+			email: '',
+			role: '',
+		})
+		setAssignedTasks([])
+		setIsAdmin(false)
+		setIsLoggedIn(false)
+		setUsers([])
+		setMyTasks([])
+		return <Navigate to='/login' />
 	}
 
 	const value = {
@@ -78,7 +170,14 @@ const UserProvider = ({ children }) => {
 		getUser,
 		getAllUsers,
 		users,
-		setIsLoading
+		setIsLoading,
+		addTask,
+		getMyTasks,
+		myTasks,
+		getAssignedTasks,
+		assignedTasks,
+		updateTaskStaus,
+		logout
 	}
 	return <userContext.Provider value={value}>{children}</userContext.Provider>
 }

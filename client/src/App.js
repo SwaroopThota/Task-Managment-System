@@ -7,7 +7,15 @@ import Home from './components/Home'
 import Login from './components/Login'
 
 function App() {
-	const { isLoading, isLoggedIn, getUser, setIsLoading } = useContext(userContext)
+	const {
+		isLoading,
+		isLoggedIn,
+		getUser,
+		setIsLoading,
+		getAllUsers,
+		getMyTasks,
+		getAssignedTasks,
+	} = useContext(userContext)
 	useEffect(() => {
 		const authToken = localStorage.getItem('authToken')
 		if (!authToken) {
@@ -15,6 +23,14 @@ function App() {
 			return
 		}
 		getUser(authToken)
+		if (!isLoggedIn) return
+		const interval = setInterval(() => {
+			getMyTasks()
+			getAssignedTasks()
+			getAllUsers()
+		}, 2000)
+
+		return () => clearInterval(interval)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 	return (
